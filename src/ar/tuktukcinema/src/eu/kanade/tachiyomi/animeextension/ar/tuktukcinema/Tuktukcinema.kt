@@ -107,7 +107,7 @@ class Tuktukcinema : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
             author = document.select("ul.RightTaxContent li:contains(دولة) a").text()
             description = document.select("div.story").text().trim()
             status = SAnime.COMPLETED
-            thumbnail_url = document.select("div.left div.image img").attr("src")
+            thumbnail_url = document.select("div.left div.image img").attr("data-src")
         }
     }
 
