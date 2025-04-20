@@ -22,7 +22,6 @@ import eu.kanade.tachiyomi.lib.vidbomextractor.VidBomExtractor
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.util.asJsoup
 import eu.kanade.tachiyomi.util.parallelCatchingFlatMapBlocking
-import java.util.Base64
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import okhttp3.Response
@@ -30,6 +29,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import java.util.Base64
 import kotlin.math.abs
 
 class Tuktukcinema : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
