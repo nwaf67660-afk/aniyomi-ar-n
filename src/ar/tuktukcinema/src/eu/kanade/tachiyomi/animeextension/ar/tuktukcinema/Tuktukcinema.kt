@@ -22,6 +22,7 @@ import eu.kanade.tachiyomi.lib.vidbomextractor.VidBomExtractor
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.util.asJsoup
 import eu.kanade.tachiyomi.util.parallelCatchingFlatMapBlocking
+import java.util.Base64
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Request
 import okhttp3.Response
@@ -35,7 +36,7 @@ class Tuktukcinema : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
 
     override val name = "توك توك سينما"
 
-    override val baseUrl = "https://w.tuktokcinema.com"
+    override val baseUrl = "https://www.tuktukcinma.com"
 
     override val lang = "ar"
 
@@ -134,9 +135,11 @@ class Tuktukcinema : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
             Video("http://", new.toString(), "http://").let(::listOf)
         } else {
             document.select(videoListSelector()).parallelCatchingFlatMapBlocking {
-                val url = it.absUrl("data-link")
+                val url = it.attr("data-link").substringBefore("0REL0Y").reversed()
+                val newUrl = String(Base64.getDecoder().decode(url))
                 val txt = it.text()
-                extractVideos(url, txt)
+                // listOf(Video(newUrl, newUrl, newUrl), extractVideos(newUrl, txt))
+                extractVideos(newUrl, txt)
             }
         }
     }
@@ -156,7 +159,7 @@ class Tuktukcinema : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
         customQuality: String? = null,
     ): List<Video> {
         return when {
-            "tuktuk" in url -> {
+            "iframe" in url -> {
                 return multiServers.extractedUrls(url).parallelCatchingFlatMapBlocking {
                     extractVideos(it.url, it.name, it.quality)
                 }
