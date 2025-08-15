@@ -119,7 +119,8 @@ class FASELHD : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
         val document = response.asJsoup()
         val iframe = document.selectFirst("iframe")!!.attr("src").substringBefore("&img")
         val webViewResult = webViewResolver.getUrl(iframe, headers)
-        return if (webViewResult.isNotBlank()) playlistUtils.extractFromHls(webViewResult) else emptyList()
+        // return if (webViewResult.isNotBlank()) playlistUtils.extractFromHls(webViewResult) else emptyList()
+        return if (webViewResult.isNotBlank()) Video(webViewResult,webViewResult,webViewResult).let(::listOf) else emptyList()
     }
 
     override fun List<Video>.sort(): List<Video> {
