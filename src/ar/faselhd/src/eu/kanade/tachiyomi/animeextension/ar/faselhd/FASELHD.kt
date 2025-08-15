@@ -38,8 +38,6 @@ class FASELHD : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
-    private val webViewResolver by lazy { WebViewResolver() }
-
     private val playlistUtils by lazy { PlaylistUtils(client, headers) }
 
     override fun headersBuilder(): Headers.Builder {
