@@ -12,6 +12,7 @@ import eu.kanade.tachiyomi.animesource.model.SEpisode
 import eu.kanade.tachiyomi.animesource.model.Video
 import eu.kanade.tachiyomi.animesource.online.ParsedAnimeHttpSource
 import eu.kanade.tachiyomi.lib.playlistutils.PlaylistUtils
+import eu.kanade.tachiyomi.lib.synchrony.Deobfuscator
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.util.asJsoup
 import okhttp3.Headers
@@ -117,10 +118,14 @@ class FASELHD : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
 
     override fun videoListParse(response: Response): List<Video> {
         val document = response.asJsoup()
-        val iframe = document.selectFirst("iframe")!!.attr("src").substringBefore("&img")
-        val webViewResult = webViewResolver.getUrl(iframe, headers)
+        val iframe = document.selectFirst("iframe")!!.attr("src")
+        val iframeDoc = client.newCall(GET(iframe)).execute().asJsoup()
+        val jsScript = iframeDoc.selectFirst("script:containsData(mainPlayer)")!!.data().let(Deobfuscator::deobfuscateScript)
+        val playUrl = jsScript.substringAfter('file').substringAfter('"').substringBefore('"')
+        return playlistUtils.extractFromHls(playUrl)
+        // val webViewResult = webViewResolver.getUrl(iframe, headers)
         // return if (webViewResult.isNotBlank()) playlistUtils.extractFromHls(webViewResult) else emptyList()
-        return if (webViewResult.isNotBlank()) Video(webViewResult,webViewResult,webViewResult).let(::listOf) else emptyList()
+        // return if (webViewResult.isNotBlank()) Video(webViewResult,webViewResult,webViewResult).let(::listOf) else emptyList()
     }
 
     override fun List<Video>.sort(): List<Video> {
