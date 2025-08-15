@@ -121,8 +121,8 @@ class FASELHD : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
         val iframe = document.selectFirst("iframe")!!.attr("src")
         val iframeDoc = client.newCall(GET(iframe)).execute().asJsoup()
         val jsScript = iframeDoc.selectFirst("script:containsData(mainPlayer)")!!.data().let(Deobfuscator::deobfuscateScript)!!
-        // val playUrl = jsScript.substringAfter("file").substringAfter("\"").substringBefore("\"")
-        return Video(jsScript, jsScript, jsScript).let(::listOf)
+        val playUrl = jsScript.substringAfter("file").substringAfter("\"").substringBefore("\"")
+        return Video(playUrl, playUrl, playUrl).let(::listOf)
         // return playlistUtils.extractFromHls(playUrl)
         // val webViewResult = webViewResolver.getUrl(iframe, headers)
         // return if (webViewResult.isNotBlank()) playlistUtils.extractFromHls(webViewResult) else emptyList()
