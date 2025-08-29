@@ -118,8 +118,10 @@ class FASELHD : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
         val iframe = document.selectFirst("iframe")!!.attr("src")
         val iframeDoc = client.newCall(GET(iframe)).execute().asJsoup()
         val jsScript = iframeDoc.selectFirst("script:containsData(hlsPlaylist)")!!.data()
-        val playUrl = jsScript.substringAfter("file").substringAfter("\"").substringBefore("\"")
-        return playlistUtils.extractFromHls(playUrl)
+        val playUrl = jsScript.substringAfter("file")
+        // .substringAfter("\"").substringBefore("\"")
+        // return playlistUtils.extractFromHls(playUrl)
+        return Video(playUrl, playUrl, playUrl).let(::listOf)
     }
 
     override fun List<Video>.sort(): List<Video> {
