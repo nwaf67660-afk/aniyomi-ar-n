@@ -63,14 +63,14 @@ class FASELHD : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
     override fun episodeListSelector() = "div.epAll a"
 
     private fun seasonsNextPageSelector(seasonNumber: Int) =
-        "div#seasonList div.col-xl-2:nth-child($seasonNumber)" // "div.List--Seasons--Episodes > a:nth-child($seasonNumber)"
+        "div#seasonList div.col-xl-2:nth-child($seasonNumber)"
 
     override fun episodeListParse(response: Response): List<SEpisode> {
         val episodes = mutableListOf<SEpisode>()
         var seasonNumber = 1
         fun episodeExtract(element: Element): SEpisode {
             val episode = SEpisode.create()
-            episode.setUrlWithoutDomain(element.select("span#liskSh").text())
+            episode.setUrlWithoutDomain(element.select("a").attr("href"))
             episode.name = "مشاهدة"
             return episode
         }
@@ -105,7 +105,9 @@ class FASELHD : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
         episode.setUrlWithoutDomain(element.attr("abs:href"))
         episode.name = element.ownerDocument()!!.select("div.seasonDiv.active > div.title")
             .text() + " : " + element.text()
-        episode.episode_number = element.text().replace("الحلقة ", "").toFloat()
+        episode.episode_number = element.text()
+            .filter { it.isDigit() }
+            .toFloatOrNull() ?: 0F
         return episode
     }
 
@@ -125,8 +127,8 @@ class FASELHD : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
     override fun List<Video>.sort(): List<Video> {
         val quality = preferences.getString("preferred_quality", "1080")!!
         return sortedWith(
-            compareBy { it.quality.contains(quality) },
-        ).reversed()
+            compareByDescending { it.quality.filter { c -> c.isDigit() }.toIntOrNull() ?: 0 }
+        )
     }
 
     override fun videoFromElement(element: Element) = throw UnsupportedOperationException()
@@ -175,7 +177,6 @@ class FASELHD : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
         anime.title = document.select("meta[itemprop=name]").attr("content")
         anime.genre = document.select("span:contains(تصنيف) > a, span:contains(مستوى) > a")
             .joinToString(", ") { it.text() }
-        // anime.thumbnail_url = document.select("div.posterImg img.poster").attr("src")
 
         val cover = document.select("div.posterImg img.poster").attr("src")
         anime.thumbnail_url = if (cover.isNullOrEmpty()) {
@@ -218,10 +219,10 @@ class FASELHD : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
     // ============================ Filters =============================
 
     override fun getFilterList() = AnimeFilterList(
-        AnimeFilter.Header("هذا القسم يعمل لو كان البحث فارع"),
+        AnimeFilter.Header("هذا القسم يعمل لو كان البحث فارغ"),
         SectionFilter(),
         AnimeFilter.Separator(),
-        AnimeFilter.Header("الفلتره تعمل فقط لو كان اقسام الموقع على 'اختر'"),
+        AnimeFilter.Header("الفلترة تعمل فقط لو كان اقسام الموقع على 'اختر'"),
         CategoryFilter(),
         GenreFilter(),
     )
@@ -307,10 +308,8 @@ class FASELHD : ConfigurableAnimeSource, ParsedAnimeHttpSource() {
             summary = "%s"
 
             setOnPreferenceChangeListener { _, newValue ->
-                val selected = newValue as String
-                val index = findIndexOfValue(selected)
-                val entry = entryValues[index] as String
-                preferences.edit().putString(key, entry).commit()
+                preferences.edit().putString(key, newValue as String).apply()
+                true
             }
         }
         screen.addPreference(videoQualityPref)
